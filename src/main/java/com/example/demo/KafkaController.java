@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.concurrent.CompletableFuture;
 
 import static com.example.demo.DemoApplication.*;
 
@@ -50,6 +51,12 @@ public class KafkaController {
         msgToKafka.append(" }");
 
 //        producerService.sendMessage(msgToKafka.toString());
-        kafkaTemplate.send(DEMO_TOPICS, msgToKafka.toString());
+//        CompletableFuture<SendResult<String, String>> sent =
+                kafkaTemplate.send(DEMO_TOPICS, msgToKafka.toString());
+//                        .exceptionally(ex -> "Error 500");
+
+//        System.out.println(sent.get());
+//        System.out.println(sent.isCancelled());
+//        System.out.println(sent.isCompletedExceptionally());
     }
 }

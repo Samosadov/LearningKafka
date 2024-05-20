@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static com.example.demo.DemoApplication.*;
 
@@ -33,17 +34,17 @@ public class KafkaController {
 //    }
 
     @PostMapping
-    public void sendMessageToKafka(@RequestBody String message) {
+    public String sendMessageToKafka(@RequestBody String message) {
         StringBuilder msgToKafka = new StringBuilder("{ ");
         try {
             Object obj = new JSONParser().parse(message);
             JSONObject jo = (JSONObject) obj;
             msg_id = (String) jo.get("msg_id");
 
-            msgToKafka.append("\"msg_id\": ").append(msg_id).append(", ")
+            msgToKafka.append("\"msg_id\": \"").append(msg_id).append("\", ")
                     .append("\"timestamp\": \"").append(Instant.now().toEpochMilli()).append("\", ")
-                    .append("\"method\": ").append(DEMO_METHOD).append("\", ")
-                    .append("\"uri\": ").append(DEMO_URI);
+                    .append("\"method\": \"").append(DEMO_METHOD).append("\", ")
+                    .append("\"uri\": \"/").append(DEMO_URI).append("\"");
 
         } catch (ParseException e) {
             System.out.println("Error of parsing");;
@@ -51,12 +52,14 @@ public class KafkaController {
         msgToKafka.append(" }");
 
 //        producerService.sendMessage(msgToKafka.toString());
-//        CompletableFuture<SendResult<String, String>> sent =
+        CompletableFuture<SendResult<String, String>> future =
                 kafkaTemplate.send(DEMO_TOPICS, msgToKafka.toString());
-//                        .exceptionally(ex -> "Error 500");
 
-//        System.out.println(sent.get());
-//        System.out.println(sent.isCancelled());
-//        System.out.println(sent.isCompletedExceptionally());
+        try {
+            System.out.println(future.get().toString());
+        } catch (InterruptedException | ExecutionException e) {
+            return "Error 500";
+        }
+        return "200 OK";
     }
 }
